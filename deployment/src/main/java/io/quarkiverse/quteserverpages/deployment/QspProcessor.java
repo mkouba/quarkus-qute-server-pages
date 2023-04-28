@@ -16,6 +16,7 @@ import io.quarkus.deployment.annotations.Consume;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.qute.deployment.TemplateFilePathsBuildItem;
 import io.quarkus.vertx.http.deployment.HttpRootPathBuildItem;
 import io.quarkus.vertx.http.deployment.RouteBuildItem;
@@ -60,6 +61,14 @@ class QspProcessor {
                 .handlerType(config.useBlockingHandler ? HandlerType.BLOCKING : HandlerType.NORMAL)
                 .handler(recorder.handler(httpRootPath.relativePath(config.rootPath),
                         templatePaths.stream().map(QspTemplatePathBuildItem::getPath).collect(Collectors.toSet())))
+                .build();
+    }
+
+    @BuildStep
+    public HotDeploymentWatchedFileBuildItem watchFiles() {
+        return HotDeploymentWatchedFileBuildItem.builder()
+                .setLocationPredicate(f -> f.startsWith("templates"))
+                .setRestartNeeded(true)
                 .build();
     }
 }
